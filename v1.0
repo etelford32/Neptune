@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neptune System - Elliot Telford's Simulation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            user-select: none;
+        }
+        
+        #canvas-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 11px;
+            width: 340px;
+            min-width: 250px;
+            max-width: 600px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(111, 168, 255, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+            resize: both;
+            overflow: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+        
+        #info::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #info::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        
+        #info::-webkit-scrollbar-thumb {
+            background: rgba(111, 168, 255, 0.5);
+            border-radius: 4px;
+        }
+        
+        #info-header {
+            cursor: move;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(111, 168, 255, 0.3);
+            margin-bottom: 10px;
+        }
+        
+        #info h3 {
+            margin: 0 0 5px 0;
+            color: #6fa8ff;
+            font-size: 18px;
+        }
+        
+        #info h4 {
+            margin: 10px 0 5px 0;
+            color: #8fbfff;
+            font-size: 13px;
+        }
+        
+        .credits {
+            color: #6fa8ff;
+            font-size: 10px;
+            font-style: italic;
+            opacity: 0.8;
+        }
+        
+        .moon-item {
+            margin: 2px 0;
+            padding: 3px 5px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .moon-item:hover {
+            background: rgba(111, 168, 255, 0.2);
+            transform: translateX(3px);
+        }
+        
+        .moon-item.selected {
+            background: rgba(111, 168, 255, 0.4);
+            border-left: 3px solid #6fa8ff;
+            font-weight: bold;
+        }
+        
+        .moon-name {
+            flex-grow: 1;
+        }
+        
+        .moon-data {
+            color: #999;
+            font-size: 10px;
+            margin-left: 10px;
+        }
+        
+        .prograde {
+            color: #90ff90;
+        }
+        
+        .retrograde {
+            color: #ff9090;
+        }
+        
+        .orbit-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+        
+        #selected-info {
+            position: absolute;
+            bottom: 60px;
+            right: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(111, 168, 255, 0.5);
+            display: none;
+            min-width: 200px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        #selected-info h4 {
+            margin: 0 0 5px 0;
+            color: #6fa8ff;
+        }
+        
+        #selected-info p {
+            margin: 3px 0;
+            font-size: 11px;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        #speed-control {
+            position: absolute;
+            bottom: 50px;
+            left: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        #speed-slider {
+            width: 150px;
+            margin-left: 10px;
+        }
+        
+        #time-display {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        #legend {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .legend-item {
+            margin: 3px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .legend-line {
+            width: 20px;
+            height: 2px;
+            margin-right: 8px;
+            display: inline-block;
+        }
+        
+        .button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background: rgba(111, 168, 255, 0.3);
+            border: 1px solid #6fa8ff;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        
+        .button:hover {
+            background: rgba(111, 168, 255, 0.5);
+            transform: translateY(-1px);
+        }
+        
+        .resize-handle {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 15px;
+            height: 15px;
+            cursor: se-resize;
+            opacity: 0.5;
+        }
+        
+        .resize-handle::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 0 10px 10px;
+            border-color: transparent transparent #6fa8ff transparent;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <div id="info">
+            <div id="info-header">
+                <h3>🪐 Neptune System</h3>
+                <div class="credits">Elliot Telford's simulation created with Claude Opus 4.1 (thanks Anthropic!)</div>
+            </div>
+            <p><strong>Neptune:</strong></p>
+            <p class="moon-data">• Radius: 24,622 km</p>
+            <p class="moon-data">• Day: 16.11 hours</p>
+            <p class="moon-data">• Axial tilt: 28.32°</p>
+            <p class="moon-data">• Atmosphere: H₂, He, CH₄</p>
+            
+            <h4>Ring System (5 rings):</h4>
+            <p class="moon-data">• Galle, Le Verrier, Lassell</p>
+            <p class="moon-data">• Arago, Adams (with arcs)</p>
+            
+            <h4>All 16 Moons (click to select):</h4>
+            <div id="moon-list">
+                <!-- Inner moons -->
+                <div class="moon-item" data-moon="Naiad">
+                    <span class="moon-name"><strong>Naiad</strong></span>
+                    <span class="orbit-indicator prograde">●</span>
+                </div>
+                <div class="moon-item" data-moon="Thalassa">
+                    <span class="moon-name"><strong>Thalassa</strong></span>
+                    <span class="orbit-indicator prograde">●</span>
+                </div>
+                <div class="moon-item" data-moon="Despina">
+                    <span class="moon-name"><strong>Despina</strong></span>
+                    <span class="orbit-indicator prograde">●</span>
+                </div>
+                <div class="moon-item" data-moon="Galatea">
+                    <span class="moon-name"><strong>Galatea</strong></span>
+                    <span class="orbit-indicator prograde">●</span>
+                </div>
+                <div class="moon-item" data-moon="Larissa">
+                    <span class="moon-name"><strong>Larissa</strong></span>
+                    <span class="orbit-indicator prograde">●</span>
+                </div>
+                <div class="moon-item" data-moon="Hippocamp">
+                    <span class="moon-name"><strong>Hippocamp</strong></span>
+                    <span class="orbit-indicator prograde">●</span>
+                </div>
+                <div class="moon-item" data-moon="Proteus">
+                    <span class="moon-name"><strong>Proteus</strong></span>
+                    <span class="orbit-indicator prograde">●</span>
+                </div>
+                <!-- Major moon -->
+                <div class="moon-item" data-moon="Triton">
+                    <span class="moon-name"><strong>Triton (largest)</strong></span>
+                    <span class="orbit-indicator retrograde">●</span>
+                </div>
+                <!-- Irregular moons -->
+                <div class="moon-item" data-moon="Nereid">
+                    <span class="moon-name"><strong>Nereid</strong></span>
+                    <span class="orbit-indicator prograde" style="background: #ffff60;">●</span>
+                </div>
+                <div class="moon-item" data-moon="Halimede">
+                    <span class="moon-name"><strong>Halimede</strong></span>
+                    <span class="orbit-indicator retrograde">●</span>
+                </div>
+                <div class="moon-item" data-moon="Sao">
+                    <span class="moon-name"><strong>Sao</strong></span>
+                    <span class="orbit-indicator prograde">●</span>
+                </div>
+                <div class="moon-item" data-moon="Laomedeia">
+                    <span class="moon-name"><strong>Laomedeia</strong></span>
+                    <span class="orbit-indicator prograde">●</span>
+                </div>
+                <div class="moon-item" data-moon="Psamathe">
+                    <span class="moon-name"><strong>Psamathe</strong></span>
+                    <span class="orbit-indicator retrograde">●</span>
+                </div>
+                <div class="moon-item" data-moon="Neso">
+                    <span class="moon-name"><strong>Neso (farthest)</strong></span>
+                    <span class="orbit-indicator retrograde">●</span>
+                </div>
+                <div class="moon-item" data-moon="S/2002 N5">
+                    <span class="moon-name"><strong>S/2002 N5</strong></span>
+                    <span class="orbit-indicator prograde">●</span>
+                </div>
+                <div class="moon-item" data-moon="S/2021 N1">
+                    <span class="moon-name"><strong>S/2021 N1</strong></span>
+                    <span class="orbit-indicator retrograde">●</span>
+                </div>
+            </div>
+            
+            <button class="button" onclick="deselectMoon()">Deselect Moon</button>
+            <button class="button" onclick="focusOnNeptune()">Focus Neptune</button>
+            <button class="button" onclick="toggleRingVisibility()">Toggle Rings</button>
+            
+            <div class="resize-handle"></div>
+        </div>
+        
+        <div id="selected-info">
+            <h4 id="selected-name">Moon Name</h4>
+            <p>Distance: <span id="selected-distance">-</span></p>
+            <p>Period: <span id="selected-period">-</span></p>
+            <p>Radius: <span id="selected-radius">-</span></p>
+            <p>Eccentricity: <span id="selected-eccentricity">-</span></p>
+            <p>Inclination: <span id="selected-inclination">-</span></p>
+        </div>
+        
+        <div id="time-display">
+            <strong>Simulation Time:</strong><br>
+            <span id="earth-time">0.0 Earth Days</span><br>
+            <span id="neptune-time">0.0 Neptune Days</span>
+        </div>
+        
+        <div id="legend">
+            <div class="legend-item">
+                <span class="legend-line" style="background: linear-gradient(90deg, #c0d0ff, #8090ff);"></span>Rings
+            </div>
+            <div class="legend-item">
+                <span class="legend-line" style="background: #90ff90;"></span>Prograde
+            </div>
+            <div class="legend-item">
+                <span class="legend-line" style="background: #ff9090;"></span>Retrograde
+            </div>
+            <div class="legend-item">
+                <span class="legend-line" style="background: #ffff60;"></span>Eccentric
+            </div>
+        </div>
+        
+        <div id="speed-control">
+            Speed: <input type="range" id="speed-slider" min="0" max="1000" value="100">
+            <span id="speed-value">1x</span><br>
+            <small>1x = 1 hour/second</small>
+        </div>
+        
+        <div id="controls">
+            🖱️ Click moons • Drag view • Scroll zoom
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Make info panel draggable and resizable
+        const infoPanel = document.getElementById('info');
+        let isDraggingPanel = false;
+        let panelOffsetX = 0;
+        let panelOffsetY = 0;
+        
+        document.getElementById('info-header').addEventListener('mousedown', (e) => {
+            isDraggingPanel = true;
+            panelOffsetX = e.clientX - infoPanel.offsetLeft;
+            panelOffsetY = e.clientY - infoPanel.offsetTop;
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (isDraggingPanel) {
+                infoPanel.style.left = Math.max(0, Math.min(window.innerWidth - infoPanel.offsetWidth, e.clientX - panelOffsetX)) + 'px';
+                infoPanel.style.top = Math.max(0, Math.min(window.innerHeight - infoPanel.offsetHeight, e.clientY - panelOffsetY)) + 'px';
+            }
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isDraggingPanel = false;
+        });
+        
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0x000000, 100, 2000);
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+        const renderer = new THREE.WebGLRenderer({ 
+            antialias: true, 
+            logarithmicDepthBuffer: true,
+            alpha: true 
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // Raycaster for mouse picking
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        
+        // Selection system
+        let selectedMoon = null;
+        let selectionBox = null;
+        let ringsVisible = true;
+        
+        // Constants
+        const NEPTUNE_RADIUS_KM = 24622;
+        const SCALE_FACTOR = 1 / 1000;
+        const NEPTUNE_RADIUS = NEPTUNE_RADIUS_KM * SCALE_FACTOR;
+        const NEPTUNE_DAY_HOURS = 16.11;
+        const SIZE_SCALE = 3;
+        
+        // Time tracking
+        let elapsedHours = 0;
+        let speedMultiplier = 1;
+        
+        const speedSlider = document.getElementById('speed-slider');
+        const speedValue = document.getElementById('speed-value');
+        speedSlider.addEventListener('input', (e) => {
+            speedMultiplier = e.target.value / 100;
+            speedValue.textContent = speedMultiplier.toFixed(1) + 'x';
+        });
+
+        // Enhanced Lighting for better ring visibility
+        const ambientLight = new THREE.AmbientLight(0x404060, 0.6);
+        scene.add(ambientLight);
+
+        const sunLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        sunLight.position.set(300, 150, 150);
+        sunLight.castShadow = true;
+        sunLight.shadow.camera.near = 0.1;
+        sunLight.shadow.camera.far = 1000;
+        sunLight.shadow.mapSize.width = 4096;
+        sunLight.shadow.mapSize.height = 4096;
+        scene.add(sunLight);
+
+        // Add secondary light for ring illumination
+        const ringLight = new THREE.DirectionalLight(0x8090ff, 0.8);
+        ringLight.position.set(-200, -100, -100);
+        scene.add(ringLight);
+
+        // Neptune light
+        const neptuneLight = new THREE.PointLight(0x6a8fbf, 0.5, 300);
+        scene.add(neptuneLight);
+
+        // Add hemisphere light for better overall illumination
+        const hemiLight = new THREE.HemisphereLight(0x4080ff, 0x202040, 0.4);
+        scene.add(hemiLight);
+
+        // Starfield
+        function createStarfield() {
+            const starGeometry = new THREE.BufferGeometry();
+            const starCount = 50000;
+            const positions = new Float32Array(starCount * 3);
+            const colors = new Float32Array(starCount * 3);
+            const sizes = new Float32Array(starCount);
+            
+            for (let i = 0; i < starCount; i++) {
+                const i3 = i * 3;
+                const radius = 800 + Math.random() * 3000;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                
+                positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+                positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+                positions[i3 + 2] = radius * Math.cos(phi);
+                
+                const starType = Math.random();
+                if (starType < 0.6) {
+                    colors[i3] = colors[i3 + 1] = colors[i3 + 2] = 0.9 + Math.random() * 0.1;
+                } else if (starType < 0.85) {
+                    colors[i3] = 1.0;
+                    colors[i3 + 1] = 0.9;
+                    colors[i3 + 2] = 0.7;
+                } else {
+                    colors[i3] = 0.7;
+                    colors[i3 + 1] = 0.8;
+                    colors[i3 + 2] = 1.0;
+                }
+                
+                sizes[i] = 0.1 + Math.random() * 0.5;
+            }
+            
+            starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            starGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            starGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+            
+            const starMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    time: { value: 0 }
+                },
+                vertexShader: `
+                    attribute float size;
+                    varying vec3 vColor;
+                    uniform float time;
+                    void main() {
+                        vColor = color;
+                        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                        float twinkle = sin(time + position.x * 0.01) * 0.2 + 0.8;
+                        gl_PointSize = size * twinkle * (300.0 / -mvPosition.z);
+                        gl_Position = projectionMatrix * mvPosition;
+                    }
+                `,
+                fragmentShader: `
+                    varying vec3 vColor;
+                    void main() {
+                        vec2 center = gl_PointCoord - 0.5;
+                        float dist = length(center);
+                        if (dist > 0.5) discard;
+                        float alpha = 1.0 - dist * 2.0;
+                        gl_FragColor = vec4(vColor, alpha);
+                    }
+                `,
+                transparent: true,
+                vertexColors: true
+            });
+            
+            return new THREE.Points(starGeometry, starMaterial);
+        }
+        
+        const starfield = createStarfield();
+        scene.add(starfield);
+
+        // Enhanced Neptune texture with atmosphere
+        function createNeptuneTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 2048;
+            canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+            
+            // Complex atmospheric gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, 1024);
+            gradient.addColorStop(0, '#0a2a4a');
+            gradient.addColorStop(0.1, '#1a3a5a');
+            gradient.addColorStop(0.3, '#2a4a6a');
+            gradient.addColorStop(0.5, '#3a5a7a');
+            gradient.addColorStop(0.7, '#2a4a6a');
+            gradient.addColorStop(0.9, '#1a3a5a');
+            gradient.addColorStop(1, '#0a2a4a');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 2048, 1024);
+            
+            // Atmospheric bands with methane influence
+            for (let i = 0; i < 60; i++) {
+                const y = Math.random() * 1024;
+                const height = 5 + Math.random() * 25;
+                const opacity = 0.05 + Math.random() * 0.2;
+                
+                const bandGradient = ctx.createLinearGradient(0, y, 0, y + height);
+                bandGradient.addColorStop(0, `rgba(100, 150, 220, ${opacity})`);
+                bandGradient.addColorStop(0.5, `rgba(120, 170, 240, ${opacity * 1.2})`);
+                bandGradient.addColorStop(1, `rgba(100, 150, 220, ${opacity})`);
+                
+                ctx.fillStyle = bandGradient;
+                ctx.fillRect(0, y, 2048, height);
+            }
+            
+            // Great Dark Spot with detail
+            ctx.save();
+            ctx.translate(800, 512);
+            ctx.rotate(Math.PI / 8);
+            
+            const spotGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 150);
+            spotGradient.addColorStop(0, 'rgba(5, 20, 40, 0.8)');
+            spotGradient.addColorStop(0.5, 'rgba(10, 30, 60, 0.6)');
+            spotGradient.addColorStop(1, 'rgba(20, 40, 70, 0.3)');
+            
+            ctx.fillStyle = spotGradient;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 150, 90, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // Bright methane clouds
+            for (let i = 0; i < 15; i++) {
+                const x = Math.random() * 2048;
+                const y = Math.random() * 1024;
+                const size = 20 + Math.random() * 60;
+                
+                const cloudGradient = ctx.createRadialGradient(x, y, 0, x, y, size);
+                cloudGradient.addColorStop(0, 'rgba(200, 220, 255, 0.4)');
+                cloudGradient.addColorStop(0.5, 'rgba(180, 200, 240, 0.2)');
+                cloudGradient.addColorStop(1, 'rgba(160, 180, 220, 0)');
+                
+                ctx.fillStyle = cloudGradient;
+                ctx.fillRect(x - size, y - size, size * 2, size * 2);
+            }
+            
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // Neptune with atmosphere
+        const neptuneGeometry = new THREE.SphereGeometry(NEPTUNE_RADIUS, 128, 64);
+        const neptuneMaterial = new THREE.MeshPhongMaterial({
+            map: createNeptuneTexture(),
+            emissive: 0x1a3a5a,
+            emissiveIntensity: 0.08,
+            shininess: 25,
+            bumpScale: 0.005
+        });
+        const neptune = new THREE.Mesh(neptuneGeometry, neptuneMaterial);
+        neptune.castShadow = true;
+        neptune.receiveShadow = true;
+        scene.add(neptune);
+
+        const neptuneAxisGroup = new THREE.Object3D();
+        neptuneAxisGroup.rotation.z = 28.32 * Math.PI / 180;
+        neptuneAxisGroup.add(neptune);
+        scene.add(neptuneAxisGroup);
+
+        // Multi-layer atmosphere
+        const atmosphereLayers = [];
+        for (let i = 0; i < 3; i++) {
+            const scale = 1.05 + i * 0.05;
+            const opacity = 0.15 - i * 0.04;
+            
+            const atmosGeometry = new THREE.SphereGeometry(NEPTUNE_RADIUS * scale, 64, 32);
+            const atmosMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    c: { value: 0.5 },
+                    p: { value: 2.5 },
+                    glowColor: { value: new THREE.Color(0x4a7faf) },
+                    viewVector: { value: camera.position }
+                },
+                vertexShader: `
+                    uniform vec3 viewVector;
+                    varying float intensity;
+                    void main() {
+                        vec3 vNormal = normalize(normalMatrix * normal);
+                        vec3 vNormel = normalize(normalMatrix * viewVector);
+                        intensity = pow(0.5 - dot(vNormal, vNormel), 2.0);
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform vec3 glowColor;
+                    varying float intensity;
+                    void main() {
+                        vec3 glow = glowColor * intensity;
+                        gl_FragColor = vec4(glow, intensity * ${opacity});
+                    }
+                `,
+                side: THREE.BackSide,
+                blending: THREE.AdditiveBlending,
+                transparent: true
+            });
+            
+            const atmosMesh = new THREE.Mesh(atmosGeometry, atmosMaterial);
+            neptune.add(atmosMesh);
+            atmosphereLayers.push(atmosMesh);
+        }
+
+        // Enhanced Ring System with better visibility
+        const ringGroup = new THREE.Object3D();
+        
+        const ringData = [
+            { name: 'Galle', inner: 41000, outer: 43000, opacity: 0.4, brightness: 0.6, particles: 3000 },
+            { name: 'Le Verrier', inner: 53200, outer: 53300, opacity: 0.6, brightness: 0.8, particles: 1000 },
+            { name: 'Lassell', inner: 53300, outer: 57200, opacity: 0.3, brightness: 0.5, particles: 4000 },
+            { name: 'Arago', inner: 57200, outer: 57300, opacity: 0.5, brightness: 0.7, particles: 1000 },
+            { name: 'Adams', inner: 62930, outer: 63050, opacity: 0.7, brightness: 0.9, particles: 2000 }
+        ];
+        
+        // Create enhanced ring texture
+        function createEnhancedRingTexture(ring) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 4096;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            
+            // Base gradient with higher contrast
+            for (let i = 0; i < 4096; i++) {
+                const t = i / 4096;
+                const brightness = ring.brightness * (0.5 + Math.random() * 0.5);
+                const alpha = ring.opacity * (0.5 + Math.sin(t * Math.PI) * 0.5);
+                
+                // Ice particles (bright blue-white)
+                if (Math.random() < 0.4) {
+                    ctx.fillStyle = `rgba(${200 + Math.random() * 55}, ${220 + Math.random() * 35}, 255, ${alpha * 1.5})`;
+                    ctx.fillRect(i, 0, 2 + Math.random() * 3, 128);
+                }
+                
+                // Rock/dust particles (gray-brown)
+                if (Math.random() < 0.3) {
+                    const gray = 100 + Math.random() * 100;
+                    ctx.fillStyle = `rgba(${gray}, ${gray * 0.9}, ${gray * 0.8}, ${alpha})`;
+                    ctx.fillRect(i, 0, 1 + Math.random() * 2, 128);
+                }
+                
+                // Background glow
+                ctx.fillStyle = `rgba(160, 180, 255, ${alpha * 0.3})`;
+                ctx.fillRect(i, 0, 1, 128);
+            }
+            
+            // Adams ring bright arcs
+            if (ring.name === 'Adams') {
+                const arcNames = ['Liberty', 'Equality', 'Fraternity', 'Courage'];
+                const arcPositions = [0.15, 0.35, 0.6, 0.85];
+                
+                arcPositions.forEach((pos, idx) => {
+                    const x = pos * 4096;
+                    const arcWidth = 100 + Math.random() * 50;
+                    
+                    for (let j = -arcWidth/2; j < arcWidth/2; j++) {
+                        const arcX = x + j;
+                        const intensity = 1 - Math.abs(j) / (arcWidth/2);
+                        ctx.fillStyle = `rgba(220, 240, 255, ${intensity})`;
+                        ctx.fillRect(arcX, 0, 3, 128);
+                    }
+                });
+            }
+            
+            return canvas;
+        }
+        
+        // Create rings with enhanced visibility
+        ringData.forEach((ring, index) => {
+            const innerRadius = (ring.inner * SCALE_FACTOR) / NEPTUNE_RADIUS * NEPTUNE_RADIUS;
+            const outerRadius = (ring.outer * SCALE_FACTOR) / NEPTUNE_RADIUS * NEPTUNE_RADIUS;
+            
+            // Main ring mesh with custom shader for better visibility
+            const ringGeometry = new THREE.RingGeometry(innerRadius, outerRadius, 256, 16);
+            const ringTexture = new THREE.CanvasTexture(createEnhancedRingTexture(ring));
+            ringTexture.rotation = Math.random() * Math.PI * 2;
+            
+            const ringMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    map: { value: ringTexture },
+                    opacity: { value: ring.opacity },
+                    brightness: { value: ring.brightness },
+                    innerRadius: { value: innerRadius },
+                    outerRadius: { value: outerRadius },
+                    lightDirection: { value: sunLight.position.normalize() }
+                },
+                vertexShader: `
+                    varying vec2 vUv;
+                    varying vec3 vPosition;
+                    void main() {
+                        vUv = uv;
+                        vPosition = position;
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform sampler2D map;
+                    uniform float opacity;
+                    uniform float brightness;
+                    uniform float innerRadius;
+                    uniform float outerRadius;
+                    uniform vec3 lightDirection;
+                    varying vec2 vUv;
+                    varying vec3 vPosition;
+                    
+                    void main() {
+                        vec4 texColor = texture2D(map, vUv);
+                        
+                        // Distance-based fade
+                        float dist = length(vPosition.xy);
+                        float fade = smoothstep(innerRadius * 0.9, innerRadius, dist) * 
+                                    (1.0 - smoothstep(outerRadius, outerRadius * 1.1, dist));
+                        
+                        // Scattering effect
+                        float scatter = 0.5 + 0.5 * dot(normalize(vPosition), lightDirection);
+                        
+                        // Final color with enhanced brightness for visibility
+                        vec3 finalColor = texColor.rgb * brightness * (0.5 + scatter * 0.5);
+                        float finalAlpha = texColor.a * opacity * fade;
+                        
+                        // Add subtle self-illumination for better visibility at distance
+                        finalColor += vec3(0.1, 0.12, 0.15) * brightness;
+                        
+                        gl_FragColor = vec4(finalColor, finalAlpha);
+                    }
+                `,
+                side: THREE.DoubleSide,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+            
+            const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
+            ringMesh.rotation.x = Math.PI / 2;
+            ringMesh.receiveShadow = true;
+            ringGroup.add(ringMesh);
+            
+            // Enhanced particle system
+            const particleCount = ring.particles;
+            const particleGeometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+            const sizes = new Float32Array(particleCount);
+            
+            for (let i = 0; i < particleCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = innerRadius + Math.random() * (outerRadius - innerRadius);
+                const height = (Math.random() - 0.5) * 0.3;
+                
+                positions[i * 3] = radius * Math.cos(angle);
+                positions[i * 3 + 1] = height;
+                positions[i * 3 + 2] = radius * Math.sin(angle);
+                
+                if (Math.random() < 0.6) {
+                    // Ice particles - bright
+                    colors[i * 3] = 0.9 + Math.random() * 0.1;
+                    colors[i * 3 + 1] = 0.95 + Math.random() * 0.05;
+                    colors[i * 3 + 2] = 1.0;
+                    sizes[i] = 0.15 + Math.random() * 0.35;
+                } else {
+                    // Rock particles - darker
+                    const gray = 0.3 + Math.random() * 0.4;
+                    colors[i * 3] = gray;
+                    colors[i * 3 + 1] = gray * 0.95;
+                    colors[i * 3 + 2] = gray * 0.9;
+                    sizes[i] = 0.1 + Math.random() * 0.2;
+                }
+            }
+            
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            particleGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+            
+            const particleMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    opacity: { value: ring.opacity * 0.7 },
+                    time: { value: 0 }
+                },
+                vertexShader: `
+                    attribute float size;
+                    varying vec3 vColor;
+                    uniform float time;
+                    void main() {
+                        vColor = color;
+                        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                        float sparkle = 0.8 + 0.2 * sin(time * 2.0 + position.x * 10.0);
+                        gl_PointSize = size * sparkle * (400.0 / -mvPosition.z);
+                        gl_Position = projectionMatrix * mvPosition;
+                    }
+                `,
+                fragmentShader: `
+                    uniform float opacity;
+                    varying vec3 vColor;
+                    void main() {
+                        vec2 center = gl_PointCoord - 0.5;
+                        float dist = length(center);
+                        if (dist > 0.5) discard;
+                        
+                        float alpha = opacity * (1.0 - smoothstep(0.3, 0.5, dist));
+                        gl_FragColor = vec4(vColor * 1.2, alpha);
+                    }
+                `,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                vertexColors: true,
+                depthWrite: false
+            });
+            
+            const particles = new THREE.Points(particleGeometry, particleMaterial);
+            particles.rotation.x = Math.PI / 2;
+            ringGroup.add(particles);
+        });
+        
+        neptuneAxisGroup.add(ringGroup);
+
+        // Complete moon data - all 16 moons
+        const moonData = [
+            // Inner regular moons
+            { name: 'Naiad', radius: 33, distance: 48227, period: 7.06, 
+              inclination: 4.7, eccentricity: 0.0003, retrograde: false, color: 0xb0b0b0 },
+            { name: 'Thalassa', radius: 40, distance: 50075, period: 7.48, 
+              inclination: 0.2, eccentricity: 0.0002, retrograde: false, color: 0xc0c0c0 },
+            { name: 'Despina', radius: 78, distance: 52526, period: 7.98, 
+              inclination: 0.1, eccentricity: 0.0001, retrograde: false, color: 0xd0d0d0 },
+            { name: 'Galatea', radius: 87, distance: 61953, period: 10.29, 
+              inclination: 0.1, eccentricity: 0.0001, retrograde: false, color: 0xc8c8c8 },
+            { name: 'Larissa', radius: 97, distance: 73548, period: 13.31, 
+              inclination: 0.2, eccentricity: 0.0014, retrograde: false, color: 0xe0e0e0 },
+            { name: 'Hippocamp', radius: 17, distance: 105283, period: 22.98, 
+              inclination: 0.1, eccentricity: 0.0005, retrograde: false, color: 0xa0a0a0 },
+            { name: 'Proteus', radius: 210, distance: 117647, period: 26.86, 
+              inclination: 0.5, eccentricity: 0.0005, retrograde: false, color: 0xe8e0d8 },
+            
+            // Major moon
+            { name: 'Triton', radius: 1353, distance: 354759, period: 141.04,
+              inclination: 156.8, eccentricity: 0.000016, retrograde: true, color: 0xd0c0b0 },
+            
+            // Irregular moons
+            { name: 'Nereid', radius: 170, distance: 5513818, period: 8640,
+              inclination: 7.2, eccentricity: 0.75, retrograde: false, color: 0xffff90 },
+            { name: 'Halimede', radius: 31, distance: 16611000, period: 46800,
+              inclination: 134.1, eccentricity: 0.57, retrograde: true, color: 0xff9090 },
+            { name: 'Sao', radius: 22, distance: 22228000, period: 69600,
+              inclination: 48.5, eccentricity: 0.29, retrograde: false, color: 0x90ff90 },
+            { name: 'Laomedeia', radius: 21, distance: 23567000, period: 74400,
+              inclination: 35.0, eccentricity: 0.42, retrograde: false, color: 0x90ff90 },
+            { name: 'Psamathe', radius: 20, distance: 48096000, period: 216000,
+              inclination: 137.4, eccentricity: 0.45, retrograde: true, color: 0xff9090 },
+            { name: 'Neso', radius: 30, distance: 49285000, period: 222720,
+              inclination: 132.6, eccentricity: 0.49, retrograde: true, color: 0xff9090 },
+            { name: 'S/2002 N5', radius: 15, distance: 23000000, period: 72000,
+              inclination: 40.0, eccentricity: 0.35, retrograde: false, color: 0xa0a0ff },
+            { name: 'S/2021 N1', radius: 14, distance: 25000000, period: 78000,
+              inclination: 135.0, eccentricity: 0.40, retrograde: true, color: 0xffa0a0 }
+        ];
+
+        const moons = [];
+        
+        function solveKepler(M, e, tolerance = 1e-6) {
+            let E = M;
+            let delta = 1;
+            while (Math.abs(delta) > tolerance) {
+                delta = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+                E -= delta;
+            }
+            return E;
+        }
+        
+        // Create all 16 moons
+        moonData.forEach(data => {
+            const scaledDistance = (data.distance / NEPTUNE_RADIUS_KM) * NEPTUNE_RADIUS;
+            const scaledRadius = (data.radius / NEPTUNE_RADIUS_KM) * NEPTUNE_RADIUS * SIZE_SCALE;
+            
+            const geometry = new THREE.SphereGeometry(
+                Math.max(scaledRadius, 0.15),
+                16, 16
+            );
+            const material = new THREE.MeshPhongMaterial({
+                color: data.color,
+                emissive: data.color,
+                emissiveIntensity: 0.03,
+                shininess: 30
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            mesh.userData = { moonData: data };
+            
+            const orbitSystem = new THREE.Object3D();
+            const inclinedOrbit = new THREE.Object3D();
+            
+            inclinedOrbit.rotation.x = data.inclination * Math.PI / 180;
+            inclinedOrbit.rotation.y = Math.random() * Math.PI * 2;
+            
+            inclinedOrbit.add(mesh);
+            orbitSystem.add(inclinedOrbit);
+            scene.add(orbitSystem);
+            
+            // Create orbit line
+            const orbitPoints = [];
+            for (let i = 0; i <= 100; i++) {
+                const angle = (i / 100) * Math.PI * 2;
+                const r = scaledDistance * (1 - data.eccentricity * data.eccentricity) / 
+                         (1 + data.eccentricity * Math.cos(angle));
+                orbitPoints.push(new THREE.Vector3(
+                    r * Math.cos(angle),
+                    0,
+                    r * Math.sin(angle)
+                ));
+            }
+            
+            const orbitGeometry = new THREE.BufferGeometry().setFromPoints(orbitPoints);
+            let orbitColor = data.retrograde ? 0xff6060 : 0x60ff60;
+            if (data.eccentricity > 0.5) orbitColor = 0xffff60;
+            
+            const orbitMaterial = new THREE.LineBasicMaterial({
+                color: orbitColor,
+                transparent: true,
+                opacity: 0.3,
+                linewidth: 2
+            });
+            const orbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
+            orbitLine.rotation.x = data.inclination * Math.PI / 180;
+            orbitLine.rotation.y = inclinedOrbit.rotation.y;
+            scene.add(orbitLine);
+            
+            const meanMotion = (2 * Math.PI) / data.period;
+            const startAngle = Math.random() * Math.PI * 2;
+            
+            moons.push({
+                name: data.name,
+                mesh: mesh,
+                orbitSystem: orbitSystem,
+                inclinedOrbit: inclinedOrbit,
+                orbitLine: orbitLine,
+                distance: scaledDistance,
+                period: data.period,
+                meanMotion: meanMotion * (data.retrograde ? -1 : 1),
+                eccentricity: data.eccentricity,
+                inclination: data.inclination,
+                meanAnomaly: startAngle,
+                retrograde: data.retrograde,
+                size: data.radius,
+                originalData: data
+            });
+        });
+
+        // Selection functions
+        function selectMoon(moon) {
+            if (selectionBox) {
+                scene.remove(selectionBox);
+            }
+            
+            if (selectedMoon) {
+                selectedMoon.orbitLine.material.opacity = 0.3;
+            }
+            
+            selectedMoon = moon;
+            moon.orbitLine.material.opacity = 0.8;
+            
+            const boxSize = moon.mesh.geometry.parameters.radius * 2.5;
+            const boxGeometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
+            const boxMaterial = new THREE.MeshBasicMaterial({
+                color: 0x6fa8ff,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.8
+            });
+            selectionBox = new THREE.Mesh(boxGeometry, boxMaterial);
+            moon.mesh.add(selectionBox);
+            
+            updateSelectedInfo(moon);
+            
+            document.querySelectorAll('.moon-item').forEach(item => {
+                item.classList.remove('selected');
+                if (item.dataset.moon === moon.name) {
+                    item.classList.add('selected');
+                }
+            });
+        }
+        
+        function deselectMoon() {
+            if (selectionBox) {
+                scene.remove(selectionBox);
+                selectionBox.parent?.remove(selectionBox);
+                selectionBox = null;
+            }
+            
+            if (selectedMoon) {
+                selectedMoon.orbitLine.material.opacity = 0.3;
+                selectedMoon = null;
+            }
+            
+            document.getElementById('selected-info').style.display = 'none';
+            document.querySelectorAll('.moon-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+        }
+        
+        window.deselectMoon = deselectMoon;
+        
+        window.focusOnNeptune = () => {
+            cameraRadius = 80;
+            deselectMoon();
+        };
+        
+        window.toggleRingVisibility = () => {
+            ringsVisible = !ringsVisible;
+            ringGroup.visible = ringsVisible;
+        };
+        
+        function updateSelectedInfo(moon) {
+            const info = document.getElementById('selected-info');
+            info.style.display = 'block';
+            
+            document.getElementById('selected-name').textContent = moon.name;
+            document.getElementById('selected-distance').textContent = 
+                moon.originalData.distance.toLocaleString() + ' km';
+            document.getElementById('selected-period').textContent = 
+                moon.period < 24 ? moon.period.toFixed(1) + ' hours' : 
+                (moon.period / 24).toFixed(1) + ' days';
+            document.getElementById('selected-radius').textContent = 
+                moon.originalData.radius + ' km';
+            document.getElementById('selected-eccentricity').textContent = 
+                moon.eccentricity.toFixed(4);
+            document.getElementById('selected-inclination').textContent = 
+                moon.inclination.toFixed(1) + '°';
+        }
+        
+        // UI moon selection
+        document.querySelectorAll('.moon-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const moonName = item.dataset.moon;
+                const moon = moons.find(m => m.name === moonName);
+                if (moon) {
+                    selectMoon(moon);
+                }
+            });
+        });
+        
+        // 3D moon selection
+        renderer.domElement.addEventListener('click', (e) => {
+            if (isDraggingPanel) return;
+            
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            
+            const moonMeshes = moons.map(m => m.mesh);
+            const intersects = raycaster.intersectObjects(moonMeshes);
+            
+            if (intersects.length > 0) {
+                const clickedMesh = intersects[0].object;
+                const moon = moons.find(m => m.mesh === clickedMesh);
+                if (moon) {
+                    selectMoon(moon);
+                }
+            }
+        });
+
+        // Camera setup
+        camera.position.set(80, 60, 100);
+        camera.lookAt(0, 0, 0);
+
+        // Orbit controls
+        let isDragging = false;
+        let previousMouseX = 0, previousMouseY = 0;
+        let cameraRadius = 150;
+        let cameraTheta = Math.PI / 4;
+        let cameraPhi = Math.PI / 3;
+
+        renderer.domElement.addEventListener('mousedown', (e) => {
+            if (!isDraggingPanel) {
+                isDragging = true;
+                previousMouseX = e.clientX;
+                previousMouseY = e.clientY;
+            }
+        });
+
+        renderer.domElement.addEventListener('mousemove', (e) => {
+            if (isDragging && !isDraggingPanel) {
+                const deltaX = e.clientX - previousMouseX;
+                const deltaY = e.clientY - previousMouseY;
+                
+                cameraTheta -= deltaX * 0.01;
+                cameraPhi = Math.max(0.1, Math.min(Math.PI - 0.1, cameraPhi - deltaY * 0.01));
+                
+                previousMouseX = e.clientX;
+                previousMouseY = e.clientY;
+            }
+        });
+
+        renderer.domElement.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        renderer.domElement.addEventListener('wheel', (e) => {
+            cameraRadius = Math.max(40, Math.min(500, cameraRadius + e.deltaY * 0.1));
+        });
+
+        // Animation loop
+        let lastTime = Date.now();
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const currentTime = Date.now();
+            const deltaTime = (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+            
+            const hoursElapsed = deltaTime * speedMultiplier / 3.6;
+            elapsedHours += hoursElapsed;
+            
+            // Update time display
+            document.getElementById('earth-time').textContent = 
+                (elapsedHours / 24).toFixed(2) + ' Earth Days';
+            document.getElementById('neptune-time').textContent = 
+                (elapsedHours / NEPTUNE_DAY_HOURS).toFixed(2) + ' Neptune Days';
+            
+            // Neptune rotation
+            neptune.rotation.y += (2 * Math.PI / NEPTUNE_DAY_HOURS) * hoursElapsed;
+            
+            // Animate atmosphere
+            atmosphereLayers.forEach((layer, i) => {
+                layer.rotation.y += 0.0001 * (i + 1);
+                layer.material.uniforms.viewVector.value = camera.position;
+            });
+            
+            // Ring animation with enhanced particle effects
+            ringGroup.children.forEach((child, index) => {
+                if (child instanceof THREE.Mesh) {
+                    // Rings rotate with Neptune around Z axis
+                    child.rotation.z += (2 * Math.PI / NEPTUNE_DAY_HOURS) * hoursElapsed * (0.9 + index * 0.02);
+                } else if (child instanceof THREE.Points) {
+                    // Particles rotate slightly differently for dynamic effect
+                    child.rotation.z += (2 * Math.PI / NEPTUNE_DAY_HOURS) * hoursElapsed * 0.85;
+                    if (child.material.uniforms.time) {
+                        child.material.uniforms.time.value = elapsedHours;
+                    }
+                }
+            });
+            
+            // Update starfield twinkle
+            if (starfield.material.uniforms.time) {
+                starfield.material.uniforms.time.value = elapsedHours * 0.1;
+            }
+            
+            // Update moon positions
+            moons.forEach(moon => {
+                moon.meanAnomaly += moon.meanMotion * hoursElapsed;
+                
+                const E = solveKepler(moon.meanAnomaly, moon.eccentricity);
+                const trueAnomaly = 2 * Math.atan2(
+                    Math.sqrt(1 + moon.eccentricity) * Math.sin(E / 2),
+                    Math.sqrt(1 - moon.eccentricity) * Math.cos(E / 2)
+                );
+                
+                const r = moon.distance * (1 - moon.eccentricity * moon.eccentricity) / 
+                         (1 + moon.eccentricity * Math.cos(trueAnomaly));
+                
+                moon.mesh.position.x = r * Math.cos(trueAnomaly);
+                moon.mesh.position.z = r * Math.sin(trueAnomaly);
+                
+                if (moon.distance < 50) {
+                    moon.mesh.lookAt(0, 0, 0);
+                } else {
+                    moon.mesh.rotation.y += moon.meanMotion * hoursElapsed * 2;
+                }
+                
+                if (moon.inclination > 30) {
+                    moon.inclinedOrbit.rotation.y += 0.00001 * hoursElapsed;
+                    moon.orbitLine.rotation.y = moon.inclinedOrbit.rotation.y;
+                }
+            });
+            
+            // Update selection box
+            if (selectionBox) {
+                selectionBox.rotation.x += 0.01;
+                selectionBox.rotation.y += 0.01;
+            }
+            
+            // Update camera
+            camera.position.x = cameraRadius * Math.sin(cameraPhi) * Math.cos(cameraTheta);
+            camera.position.y = cameraRadius * Math.cos(cameraPhi);
+            camera.position.z = cameraRadius * Math.sin(cameraPhi) * Math.sin(cameraTheta);
+            camera.lookAt(0, 0, 0);
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
