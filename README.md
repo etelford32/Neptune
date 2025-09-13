@@ -116,6 +116,7 @@ Create Relativistic orbits for the moons and study the gravitational evolutions 
 🙏 Acknowledgments
 
 Created by Elliot Telford
+Elliottelford.com | Telford Projects LLC
 Simulation developed with Claude Opus 4.1 (Anthropic)
 Orbital data from NASA/JPL
 Three.js community for the excellent 3D library
